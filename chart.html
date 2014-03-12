@@ -1,0 +1,240 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<style type="text/css">
+#container{height:500px;width:1200px;float:left;}
+</style>
+<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/Highcharts-3.0.7/js/highcharts.js"></script>
+<title>chart</title>
+</head>
+<body>
+<div id="container"></div>
+<label for="iftooltip">信息框</label><input type="checkbox" id="iftooltip" checked/>
+</body>
+</html>
+<script type="text/javascript">
+var chartdata = $("#chartdata",parent.document).val();
+var okdata = JSON.parse(chartdata);
+var chart;
+$(function(){
+var options = ({
+		chart: {
+			renderTo: 'container'
+		},
+		title: {
+			text: 'Channel Quality Info'
+		},
+		xAxis: {
+			
+		},
+		yAxis: [{
+			labels: {
+                format: '{value} dB',
+                style: {
+                    color: '#89A54E'
+                }
+            },
+			title: {
+				text: 'SINR  RSRP',
+				style: {
+                    color: '#89A54E'
+                }
+			},
+		},{
+            labels: {
+                format: '{value} Mbps',
+                style: {
+                    color: '#4572A7'
+                }
+            },
+			title: {
+                text: '下行吞吐量',
+                style: {
+                    color: '#4572A7'
+                }
+            },
+            opposite: true
+		}],
+		plotOptions: {
+            series: {
+               cursor: 'pointer',
+			   events: {
+				click: function(event) {
+					parent.jq.fancybox.close();
+					parent.map.removeOverlay(parent.backpoint);
+					var marker_point = new parent.BMap.Point(event.point.extra[0],event.point.extra[1]);
+					parent.backpoint = new parent.BMap.Marker(marker_point);
+					parent.map.addOverlay(parent.backpoint);
+					parent.map.centerAndZoom(marker_point, 40);
+				}
+			   },
+			   animation: false
+            }
+        },
+		tooltip: {
+            shared: true,
+        },
+		series: [{
+			type: 'line',
+			name: 'SINR 平均值',
+			data: okdata[0],
+			visible: false,
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'line',
+			name: 'SINR 方差',
+			data: okdata[1],
+			visible: false,
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'scatter',
+			name: 'SINR 散点',
+			data: okdata[2],
+			visible: false,
+			marker: {
+				radius: 4
+			},
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'line',
+			name: 'RSRP 平均值',
+			data: okdata[3],
+			visible: false,
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'line',
+			name: 'RSRP 方差',
+			data: okdata[4],
+			visible: false,
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'scatter',
+			name: 'RSRP 散点',
+			data: okdata[5],
+			visible: false,
+			marker: {
+				radius: 4
+			},
+			tooltip: {
+                valueSuffix: ' dB'
+            }
+		},{
+			type: 'line',
+			name: '下行吞吐量 平均值',
+			data: okdata[6],
+			yAxis: 1,
+			tooltip: {
+                valueSuffix: ' Mbps'
+            }
+		},{
+			type: 'line',
+			name: '下行吞吐量 方差',
+			data: okdata[7],
+			yAxis: 1,
+			tooltip: {
+                valueSuffix: ' Mbps'
+            }
+		},{
+			type: 'scatter',
+			name: '下行吞吐量 散点',
+			data: okdata[8],
+			yAxis: 1,
+			marker: {
+				radius: 4
+			},
+			tooltip: {
+                valueSuffix: ' Mbps'
+            }
+		}]
+	});
+	chart = new Highcharts.Chart(options);
+	//for(var i=0;i<6;i++)
+	//	chart.series[i].hide();
+	/*function Band(from,to,pci){
+		this.from = from;
+		this.to = to;
+		this.pci = pci;
+	}
+	var bands = [];
+	var dit1,dit2,pci;
+	for(var i=0;i<okdata[0].length;i++){
+		if(okdata[0][i].extra!=pci){
+			bands.push(new Band(dit1,dit2,pci));
+			dit1 = dit2 = okdata[0][i].x;
+			pci = okdata[0][i].extra;
+		}else{
+			dit2 = okdata[0][i].x;
+		}
+	}
+	bands.push(new Band(dit1,dit2,pci));
+	bands.shift();
+	for(var i=0;i<bands.length;i++){
+		alert(bands[i].from+' '+bands[i].to+' '+bands[i].pci);
+	}
+	for(var i=0;i<bands.length;i++){
+		if(i%2){
+			chart.xAxis[0].addPlotBand({
+						from: bands[i].from,
+						to: bands[i].to,
+						color: '#FCFFC5',
+						label:{
+							text: bands[i].pci
+						}
+			});
+		}
+		else{
+			chart.xAxis[0].addPlotBand({
+						from: bands[i].from,
+						to: bands[i].to,
+						color: '#F0F8FF',
+						label:{
+							text: bands[i].pci
+						}
+			});
+		}
+	}*/
+	addPlotBand();
+	$("#iftooltip").change(function(){
+		options.tooltip.enabled = document.getElementById("iftooltip").checked;
+		chart = new Highcharts.Chart(options);
+		addPlotBand();
+	});
+});
+
+function addPlotBand(){
+	for(var i=0;i<okdata[9].length;i++){
+		if(i%2){
+			chart.xAxis[0].addPlotBand({
+						from: okdata[9][i].from,
+						to: okdata[9][i].to,
+						color: '#FCFFC5',
+						label:{
+							text: okdata[9][i].pci
+						}
+			});
+		}
+		else{
+			chart.xAxis[0].addPlotBand({
+						from: okdata[9][i].from,
+						to: okdata[9][i].to,
+						color: '#F0F8FF',
+						label:{
+							text: okdata[9][i].pci
+						}
+			});
+		}
+	}
+}
+</script>

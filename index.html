@@ -1,130 +1,333 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" href="css/bootstrap.css" />
-<title>信道环境测量演示系统</title>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3 Page Template</title>
+		<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+		<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+		<style>
+		.axis path,
+.axis line {
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+
+.axis text {
+	font-family: sans-serif;
+	font-size: 11px;
+}
+
+.dot {
+  stroke: #000;
+}
 
 
-<style type="text/css">
+.legend {
+	            padding: 5px;
+	            font: 10px sans-serif;
+	            background: yellow;
+	            box-shadow: 2px 2px 1px #888;
+            }
+		</style>
+	</head>
+	<body>
+		<div>
+			<div class="btn-group pull-right">
+  				<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+   						 Messages per hour <span class="caret"></span>
+ 				</button>
+  				<ul class="dropdown-menu" role="menu">
+   					<li><a class="m" value="2014-02-19" href="#">2014-02-19</a></li>
+    				<li><a class="m" value="2014-02-20" href="#">2014-02-20</a></li>
+    				<li><a class="m" value="2014-02-21" href="#">2014-02-21</a></li>
+    				<li><a class="m" value="2014-02-22" href="#">2014-02-22</a></li>
+    				<li><a class="m" value="2014-02-23" href="#">2014-02-23</a></li>
+  				</ul>
+			</div>
 
-</style>
-</head>
+		<div id="mbars">
+		</div>
+	    </div>
+		<script type="text/javascript">
+		var w = 600;                        //width
+		var h = 500;                        //height
+		var padding = {top: 40, right: 40, bottom: 40, left:40};
+		var dataset;
+		//Set up stack method
+		var stack = d3.layout.stack();
 
-<body>
-	<script src="js/jquery-1.10.2.min.js"></script>
-	<script src="js/bootstrap.js"></script>
-	<script src="js/jquery.fancybox.pack.js"></script>
-	<!----------------------------------------------------------------------------------------->
-	 <!-- Fixed navbar -->
-      <header class="navbar navbar-default navbar-fixed-top" role="navigation">
-        <div class="container">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="index.html">RSSS</a>
-          </div>
-          <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-             <li><a href="original_data_import_form.php">上传数据</a></li>
-			<li><a href="upload_signal_path_form.php">查看单表</a></li>
-			<li><a href="editBSList.php">管理基站</a></li>
-			<!--  <li><a href="">帮助</a></li>-->
-			<!-- <li><a href="">联系我们</a></li> -->
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </header>
-      
-      
-	  <!-- Begin page content -->
-      <div class="container" style="margin-top:40px;">
-        <div class="page-header">
-          <h1>The Presentation System Of Channel Environment</h1>
-        </div>
-       	<div class="row">
-       		<div class="col-md-2">
-       		<div style="background-color: #eeeeee;padding: 10px; height:630px;">
-						请勾选需要显示的PCI：
-						<form name="form1">
-							<div id="select_pci"></div>
-							<script type="text/javascript">
-								var jq = $.noConflict();
-								jq(document).ready(function () {
-									jq.getJSON("data_output.php?type=pciList", function(data) {
-										var pciList = data.pciList;
-										var pci_select = document.getElementById("select_pci");
+		d3.json("mperday.json",function(json){
+			dataset = json;
 
-										pci_select.innerHTML = "<div class=\"input-group\"><span class=\"input-group-addon\"><input type=\"checkbox\" name=\"pci_all\" onchange=\"selectAll()\" /></span><lable class=\"form-control\">全选</lable></div>";
-										for (var i = 0; i < pciList.length; i++) {
-											pci_select.innerHTML += "<div class=\"input-group\"><span class=\"input-group-addon\"><input type=\"checkbox\" name=\"pci_select\" value="+pciList[i]+" /></span><lable class=\"form-control\">"+ pciList[i]+"</lable></div>";
-										}
-									});
-								});			
-							</script>
-							<input type="button" onclick="drawRegion()" value="确定" />
-						</form>
-						<br/>
-						<p>浏览SINR曲线，选定其中点之后点击：</p>
-						<input type="button" value="显示SINR图" class="submit" id="one"
-							onclick='window.frames["mapframe"].openchartcallback();' />
-					</div>
-       		
-       		</div>
-       		<div class="col-md-10" style="background-color: #eeeeee;padding: 10px; height:630px;">
-       		<div id="map">
-						<iframe id="mapframe" src="map1.php" height="600" width="100%"
-							frameborder="1" scrolling="no"></iframe>
-					</div>
-       		
-       		</div>
-       	</div>
-      </div>
+			//Data, stacked
+			stack(dataset);
 
-    <div id="footer">
-      <div class="container">
-        <p class="text-muted">HuaWei--the presentation system of channel
-						environment</p>
-      </div>
-    </div>
-		
-	<script type="text/javascript">
-		/**
-		 * 根据勾选的PCI get到PCI的数据并调用mapframe中的绘制范围函数
-		 */
-		function drawRegion() {
-			var pci_list = document.form1.pci_select;
-			var pciNumList = [];
-			for (var i = 0; i < pci_list.length; i++) {
-				if (pci_list[i].checked) {
-					pciNumList.push(pci_list[i].value);
-				}
-			}
-			window.frames["mapframe"].drawRegion(pciNumList);
-		}
+			var color_hash = {
+				    0 : ["Invite","#1f77b4"],
+					1 : ["Accept","#2ca02c"],
+					2 : ["Decline","#ff7f0e"]
 
-		/**
-		 * 全选函数，勾选时选中所有复选框。取消勾选时取消所有复选框
-		 */
-		function selectAll() {
-			var pci_all = document.form1.pci_all;
-			var pci_list = document.form1.pci_select;
-			if (pci_all.checked) {
-				for (var i = 0; i < pci_list.length; i++) {
-					pci_list[i].checked = true;
-				}
-			} else {
-				for (var i = 0; i < pci_list.length; i++) {
-					pci_list[i].checked = false;
-				}
-			}
-		}
-	</script>
-</body>
+			};
+
+
+			//Set up scales
+			var xScale = d3.time.scale()
+				.domain([new Date(dataset[0][0].time),d3.time.day.offset(new Date(dataset[0][dataset[0].length-1].time),8)])
+				.rangeRound([0, w-padding.left-padding.right]);
+
+			var yScale = d3.scale.linear()
+				.domain([0,				
+					d3.max(dataset, function(d) {
+						return d3.max(d, function(d) {
+							return d.y0 + d.y;
+						});
+					})
+				])
+				.range([h-padding.bottom-padding.top,0]);
+
+			var xAxis = d3.svg.axis()
+						   .scale(xScale)
+						   .orient("bottom")
+						   .ticks(d3.time.days,1);
+
+			var yAxis = d3.svg.axis()
+						   .scale(yScale)
+						   .orient("left")
+						   .ticks(10);
+
+
+
+			//Easy colors accessible via a 10-step ordinal scale
+			var colors = d3.scale.category10();
+
+			//Create SVG element
+			var svg = d3.select("#mbars")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			// Add a group for each row of data
+			var groups = svg.selectAll("g")
+				.data(dataset)
+				.enter()
+				.append("g")
+				.attr("class","rgroups")
+				.attr("transform","translate("+ padding.left + "," + (h - padding.bottom) +")")
+				.style("fill", function(d, i) {
+					return color_hash[dataset.indexOf(d)][1];
+				});
+
+			// Add a rect for each data value
+			var rects = groups.selectAll("rect")
+				.data(function(d) { return d; })
+				.enter()
+				.append("rect")
+				.attr("width", 2)
+				.style("fill-opacity",1e-6);
+
+
+			rects.transition()
+			     .duration(function(d,i){
+			    	 return 1000 * i;
+			     })
+			     .ease("linear")
+			    .attr("x", function(d) {
+					return xScale(new Date(d.time));
+				})
+				.attr("y", function(d) {
+					return -(- yScale(d.y0) - yScale(d.y) + (h - padding.top - padding.bottom)*2);
+				})
+				.attr("height", function(d) {
+					return -yScale(d.y) + (h - padding.top - padding.bottom);
+				})
+				.attr("width", 15)
+				.style("fill-opacity",1);
+
+				svg.append("g")
+					.attr("class","x axis")
+					.attr("transform","translate(40," + (h - padding.bottom) + ")")
+					.call(xAxis);
+
+
+				svg.append("g")
+					.attr("class","y axis")
+					.attr("transform","translate(" + padding.left + "," + padding.top + ")")
+					.call(yAxis);
+
+				// adding legend
+
+				var legend = svg.append("g")
+								.attr("class","legend")
+								.attr("x", w - padding.right - 65)
+								.attr("y", 25)
+								.attr("height", 100)
+								.attr("width",100);
+
+				legend.selectAll("g").data(dataset)
+					  .enter()
+					  .append('g')
+					  .each(function(d,i){
+					  	var g = d3.select(this);
+					  	g.append("rect")
+					  		.attr("x", w - padding.right - 65)
+					  		.attr("y", i*25 + 10)
+					  		.attr("width", 10)
+					  		.attr("height",10)
+					  		.style("fill",color_hash[String(i)][1]);
+
+					  	g.append("text")
+					  	 .attr("x", w - padding.right - 50)
+					  	 .attr("y", i*25 + 20)
+					  	 .attr("height",30)
+					  	 .attr("width",100)
+					  	 .style("fill",color_hash[String(i)][1])
+					  	 .text(color_hash[String(i)][0]);
+					  });
+
+				svg.append("text")
+				.attr("transform","rotate(-90)")
+				.attr("y", 0 - 5)
+				.attr("x", 0-(h/2))
+				.attr("dy","1em")
+				.text("Number of Messages");
+
+			svg.append("text")
+			   .attr("class","xtext")
+			   .attr("x",w/2 - padding.left)
+			   .attr("y",h - 5)
+			   .attr("text-anchor","middle")
+			   .text("Days");
+
+			svg.append("text")
+	        .attr("class","title")
+	        .attr("x", (w / 2))             
+	        .attr("y", 20)
+	        .attr("text-anchor", "middle")  
+	        .style("font-size", "16px") 
+	        .style("text-decoration", "underline")  
+	        .text("Number of messages per day.");
+
+			//On click, update with new data			
+			d3.selectAll(".m")
+				.on("click", function() {
+					var date = this.getAttribute("value");
+
+					var str;
+					if(date == "2014-02-19"){
+						str = "19.json";
+					}else if(date == "2014-02-20"){
+						str = "20.json";
+					}else if(date == "2014-02-21"){
+						str = "21.json";
+					}else if(date == "2014-02-22"){
+						str = "22.json";
+					}else{
+						str = "23.json";
+					}
+
+					d3.json(str,function(json){
+
+						dataset = json;
+						stack(dataset);
+
+						console.log(dataset);
+
+						xScale.domain([new Date(0, 0, 0,dataset[0][0].time,0, 0, 0),new Date(0, 0, 0,dataset[0][dataset[0].length-1].time,0, 0, 0)])
+						.rangeRound([0, w-padding.left-padding.right]);
+
+						yScale.domain([0,				
+										d3.max(dataset, function(d) {
+											return d3.max(d, function(d) {
+												return d.y0 + d.y;
+											});
+										})
+									])
+									.range([h-padding.bottom-padding.top,0]);
+
+						xAxis.scale(xScale)
+						     .ticks(d3.time.hour,2)
+						     .tickFormat(d3.time.format("%H"));
+
+						yAxis.scale(yScale)
+						     .orient("left")
+						     .ticks(10);
+
+						 groups = svg.selectAll(".rgroups")
+		                    .data(dataset);
+
+		                    groups.enter().append("g")
+		                    .attr("class","rgroups")
+		                    .attr("transform","translate("+ padding.left + "," + (h - padding.bottom) +")")
+		                    .style("fill",function(d,i){
+		                        return color(i);
+		                    });
+
+
+		                    rect = groups.selectAll("rect")
+		                    .data(function(d){return d;});
+
+		                    rect.enter()
+		                      .append("rect")
+		                      .attr("x",w)
+		                      .attr("width",1)
+		                      .style("fill-opacity",1e-6);
+
+		                rect.transition()
+		                    .duration(1000)
+		                    .ease("linear")
+		                    .attr("x",function(d){
+		                        return xScale(new Date(0, 0, 0,d.time,0, 0, 0));
+		                    })
+		                    .attr("y",function(d){
+		                        return -(- yScale(d.y0) - yScale(d.y) + (h - padding.top - padding.bottom)*2);
+		                    })
+		                    .attr("height",function(d){
+		                        return -yScale(d.y) + (h - padding.top - padding.bottom);
+		                    })
+		                    .attr("width",15)
+		                    .style("fill-opacity",1);
+
+		                rect.exit()
+					       .transition()
+					       .duration(1000)
+					       .ease("circle")
+					       .attr("x",w)
+					       .remove();
+
+		                groups.exit()
+					       .transition()
+					       .duration(1000)
+					       .ease("circle")
+					       .attr("x",w)
+					       .remove();
+
+
+						svg.select(".x.axis")
+						   .transition()
+						   .duration(1000)
+						   .ease("circle")
+						   .call(xAxis);
+
+						svg.select(".y.axis")
+						   .transition()
+						   .duration(1000)
+						   .ease("circle")
+						   .call(yAxis);
+
+						svg.select(".xtext")
+						   .text("Hours");
+
+						svg.select(".title")
+				        .text("Number of messages per hour on " + date + ".");
+					});			
+				});
+
+
+		});
+
+		</script>
+	</body>
 </html>
-
-

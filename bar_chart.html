@@ -73,26 +73,30 @@ d3.tsv("data/data_bar_chart.tsv", type, function(error, data) {
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Frequency");
-  var transition = svg.transition().duration(750),delay = function(d, i) { return i * 50; };
+  
   var g =svg.selectAll(".bar")
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.letter); })
       .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.frequency); })
-      .attr("height", function(d) { return height - y(d.frequency); }).delay(delay).attr(2500);
+      .attr("height", 0)
+      .attr("y",height)
+      .transition().duration(1000).attr("y", function(d) { return y(d.frequency); })
+      .attr("height", function(d) { return height - y(d.frequency); });
+
       
 
 	svg.selectAll(".text123")
 	.data(data)
 	.enter().append("text")  
     .attr("x", function(d) { return x(d.letter) + 35 })  //散列值+散列宽度的一半  
-    .attr("y",function(d){return y(d.frequency) - 1;})  
+    .attr("y",height)  
     .attr("dx", ".35em") //  horizontal-align: middle 居中对齐  
     .attr("dy", 0) // vertical-align: middle //垂直方向无偏移  
     .attr("text-anchor", "end") // text-align: right  
-    .text(function(d){return (d.frequency*100).toFixed(2)+"%";}); //设置数据为显示值 相当于.text(function(d){ return d;})  
+    .text(function(d){return (d.frequency*100).toFixed(2)+"%";}) //设置数据为显示值 相当于.text(function(d){ return d;})  
+    .transition().duration(1000).attr("y", function(d) { return y(d.frequency); })
 
 });
 
